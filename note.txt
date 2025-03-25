@@ -1,0 +1,4 @@
+alembic init alembic
+alembic revision --autogenerate -m "Initial migration"
+alembic upgrade head
+locust --headless -u 10 -r 2 --run-time 1m
