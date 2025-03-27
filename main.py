@@ -1,10 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
+
+from app.api.conversation_api import conversation_router
 from app.api.user_api import user_router
 
 app = FastAPI()
 
 app.include_router(user_router, prefix='/api')
+app.include_router(conversation_router, prefix='/api')
 
 
 if __name__ == "__main__":
