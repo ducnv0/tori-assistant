@@ -5,11 +5,10 @@ class UserCreateRequest(BaseModel):
     username: str
 
 
-class UserResponse(BaseModel):
+class UserResponse(UserCreateRequest):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    username: str
 
 
 class ListUserResponse(BaseModel):

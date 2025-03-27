@@ -19,7 +19,7 @@ class ConversationRepository:
         offset, limit = get_offset_limit(page, page_size)
         filters = [Conversation.user_id == user_id]
 
-        stmt = select(Conversation).where(*filters)
+        stmt = select(Conversation).where(*filters).order_by(Conversation.id.desc())  # FIXME: should be ordered by created_at
         results = await db.execute(stmt.offset(offset).limit(limit))
         conversations = results.scalars().all()
 

@@ -17,7 +17,7 @@ class UserRepository:
 
     async def search(self, db: AsyncSession, page: int, page_size: int) -> (list[User], int):
         offset, limit = get_offset_limit(page, page_size)
-        stmt = select(User)
+        stmt = select(User).order_by(User.id.desc())  # FIXME: should be ordered by created_at
         results = await db.execute(stmt.offset(offset).limit(limit))
         users = results.scalars().all()
 

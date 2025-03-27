@@ -6,12 +6,10 @@ class ConversationCreateRequest(BaseModel):
     title: str
 
 
-class ConversationResponse(BaseModel):
+class ConversationResponse(ConversationCreateRequest):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    user_id: int
-    title: str
 
 
 class ListConversationResponse(BaseModel):
