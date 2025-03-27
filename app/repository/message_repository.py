@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model.message import Message
@@ -15,12 +15,19 @@ class MessageRepository:
         await db.refresh(message)
         return message
 
-
-    async def search(self, db: AsyncSession, conversation_id: int, page: int, page_size: int,) -> (list[Message], int):
+    async def search(
+        self,
+        db: AsyncSession,
+        conversation_id: int,
+        page: int,
+        page_size: int,
+    ) -> (list[Message], int):
         offset, limit = get_offset_limit(page, page_size)
         filters = [Message.conversation_id == conversation_id]
 
-        stmt = select(Message).where(*filters).order_by(Message.id.desc())  # FIXME: should be ordered by created_at
+        stmt = (
+            select(Message).where(*filters).order_by(Message.id.desc())
+        )  # FIXME: should be ordered by created_at
         results = await db.execute(stmt.offset(offset).limit(limit))
         messages = results.scalars().all()
 

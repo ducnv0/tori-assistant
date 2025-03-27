@@ -1,7 +1,9 @@
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, String, ForeignKey
-from app.model.base import Base
+
 from app.exception import ValidationError
+from app.model.base import Base
+
 
 class Conversation(Base):
     __tablename__ = 'conversation'

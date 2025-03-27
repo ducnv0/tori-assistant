@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.injector import container
-from app.schema.message_schema import MessageResponse, ListMessageResponse
+from app.schema.message_schema import ListMessageResponse, MessageResponse
 
 message_router = APIRouter(tags=['Message'])
 message_service = container.message_service()
@@ -15,6 +15,15 @@ async def find_by_id(_id: int, db: Session = Depends(get_db)) -> MessageResponse
 
 
 @message_router.get('/message')
-async def search(conversation_id: int, page: int = 1, page_size: int = 10, db: Session = Depends(get_db)) -> ListMessageResponse:
-    messages, total = await message_service.search(db, conversation_id=conversation_id, page=page, page_size=page_size)
-    return ListMessageResponse(data=messages, page=page, page_size=page_size, total=total)
+async def search(
+    conversation_id: int,
+    page: int = 1,
+    page_size: int = 10,
+    db: Session = Depends(get_db),
+) -> ListMessageResponse:
+    messages, total = await message_service.search(
+        db, conversation_id=conversation_id, page=page, page_size=page_size
+    )
+    return ListMessageResponse(
+        data=messages, page=page, page_size=page_size, total=total
+    )

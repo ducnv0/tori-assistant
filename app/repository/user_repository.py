@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model import User
@@ -15,9 +15,13 @@ class UserRepository:
         await db.refresh(user)
         return user
 
-    async def search(self, db: AsyncSession, page: int, page_size: int) -> (list[User], int):
+    async def search(
+        self, db: AsyncSession, page: int, page_size: int
+    ) -> (list[User], int):
         offset, limit = get_offset_limit(page, page_size)
-        stmt = select(User).order_by(User.id.desc())  # FIXME: should be ordered by created_at
+        stmt = select(User).order_by(
+            User.id.desc()
+        )  # FIXME: should be ordered by created_at
         results = await db.execute(stmt.offset(offset).limit(limit))
         users = results.scalars().all()
 

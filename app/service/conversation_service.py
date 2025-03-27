@@ -8,7 +8,11 @@ from app.service.user_service import UserService
 
 
 class ConversationService:
-    def __init__(self, conversation_repository: ConversationRepository, user_service: UserService):
+    def __init__(
+        self,
+        conversation_repository: ConversationRepository,
+        user_service: UserService,
+    ):
         self.conversation_repository = conversation_repository
         self.user_service = user_service
 
@@ -18,11 +22,19 @@ class ConversationService:
             raise NotFoundError(f'Conversation with id {_id} not found')
         return conversation
 
-    async def create(self, db: AsyncSession, req: ConversationCreateRequest) -> Conversation:
+    async def create(
+        self,
+        db: AsyncSession,
+        req: ConversationCreateRequest,
+    ) -> Conversation:
         await self.user_service.find_by_id(db, req.user_id)
         conversation = Conversation(user_id=req.user_id, title=req.title)
         conversation.validate()
         return await self.conversation_repository.create(db, conversation)
 
-    async def search(self, db: AsyncSession, user_id: int, page: int, page_size: int) -> (list[Conversation], int):
-        return await self.conversation_repository.search(db, user_id=user_id, page=page, page_size=page_size)
+    async def search(
+        self, db: AsyncSession, user_id: int, page: int, page_size: int
+    ) -> (list[Conversation], int):
+        return await self.conversation_repository.search(
+            db, user_id=user_id, page=page, page_size=page_size
+        )

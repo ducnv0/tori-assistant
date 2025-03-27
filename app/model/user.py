@@ -1,7 +1,9 @@
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String
-from app.model.base import Base
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.exception import ValidationError
+from app.model.base import Base
+
 
 class User(Base):
     __tablename__ = 'user'

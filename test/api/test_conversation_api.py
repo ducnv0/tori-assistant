@@ -17,7 +17,6 @@ class TestConversationAPI(ConversationFixture):
         assert data['id'] is not None
         assert data['user_id'] == user_1.id
 
-
     def test_fail_create_conversation_user_not_found(self, client):
         # Arrange
         payload = {
@@ -40,13 +39,21 @@ class TestConversationAPI(ConversationFixture):
         assert data['title'] == conversation_1.title
         assert data['id'] == conversation_1.id
 
-    def test_success_search_conversation_for_user_1(self, client, user_1, conversation_1, conversation_2, conversation_3):
+    def test_success_search_conversation_for_user_1(
+        self, client, user_1, conversation_1, conversation_2, conversation_3
+    ):
         # Arrange
         # Act
-        response = client.get('/api/conversation', params={'user_id': user_1.id, 'page': 1, 'page_size': 10})
+        response = client.get(
+            '/api/conversation',
+            params={'user_id': user_1.id, 'page': 1, 'page_size': 10},
+        )
         # Assert
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data['data']) == 2
         assert data['total'] == 2
-        assert {conversation['id'] for conversation in data['data']} == {conversation_1.id, conversation_3.id}
+        assert {conversation['id'] for conversation in data['data']} == {
+            conversation_1.id,
+            conversation_3.id,
+        }

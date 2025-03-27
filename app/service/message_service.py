@@ -5,7 +5,6 @@ from app.model.message import Message
 from app.repository.message_repository import MessageRepository
 from app.schema.message_schema import MessageCreateRequest
 from app.service.conversation_service import ConversationService
-from app.service.user_service import UserService
 
 
 class MessageService:
@@ -35,5 +34,9 @@ class MessageService:
         message.validate()
         return await self.message_repository.create(db, message)
 
-    async def search(self, db: AsyncSession, conversation_id: int, page: int, page_size: int) -> (list[Message], int):
-        return await self.message_repository.search(db, conversation_id=conversation_id, page=page, page_size=page_size)
+    async def search(
+        self, db: AsyncSession, conversation_id: int, page: int, page_size: int
+    ) -> (list[Message], int):
+        return await self.message_repository.search(
+            db, conversation_id=conversation_id, page=page, page_size=page_size
+        )

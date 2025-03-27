@@ -21,6 +21,7 @@ class UserService:
         user.validate()
         return await self.user_repository.create(db, user)
 
-    async def search(self, db: AsyncSession, page: int, page_size: int) -> (list[User], int):
+    async def search(
+        self, db: AsyncSession, page: int, page_size: int
+    ) -> (list[User], int):
         return await self.user_repository.search(db, page=page, page_size=page_size)
-

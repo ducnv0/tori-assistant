@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model import Conversation
@@ -9,17 +9,29 @@ class ConversationRepository:
     async def find_by_id(self, db: AsyncSession, _id: int) -> Conversation | None:
         return await db.get(Conversation, _id)
 
-    async def create(self, db: AsyncSession, conversation: Conversation) -> Conversation:
+    async def create(
+        self,
+        db: AsyncSession,
+        conversation: Conversation,
+    ) -> Conversation:
         db.add(conversation)
         await db.commit()
         await db.refresh(conversation)
         return conversation
 
-    async def search(self, db: AsyncSession, user_id: int, page: int, page_size: int) -> (list[Conversation], int):
+    async def search(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        page: int,
+        page_size: int,
+    ) -> (list[Conversation], int):
         offset, limit = get_offset_limit(page, page_size)
         filters = [Conversation.user_id == user_id]
 
-        stmt = select(Conversation).where(*filters).order_by(Conversation.id.desc())  # FIXME: should be ordered by created_at
+        stmt = (
+            select(Conversation).where(*filters).order_by(Conversation.id.desc())
+        )  # FIXME: should be ordered by created_at
         results = await db.execute(stmt.offset(offset).limit(limit))
         conversations = results.scalars().all()
 

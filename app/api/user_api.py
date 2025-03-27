@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.injector import container
-from app.schema.user_schema import UserCreateRequest, UserResponse, ListUserResponse
+from app.schema.user_schema import ListUserResponse, UserCreateRequest, UserResponse
 
 user_router = APIRouter(tags=['User'])
 user_service = container.user_service()
@@ -20,6 +20,8 @@ async def find_by_id(_id: int, db: Session = Depends(get_db)) -> UserResponse:
 
 
 @user_router.get('/user')
-async def search(page: int = 1, page_size: int = 10, db: Session = Depends(get_db)) -> ListUserResponse:
+async def search(
+    page: int = 1, page_size: int = 10, db: Session = Depends(get_db)
+) -> ListUserResponse:
     users, total = await user_service.search(db, page=page, page_size=page_size)
     return ListUserResponse(data=users, page=page, page_size=page_size, total=total)

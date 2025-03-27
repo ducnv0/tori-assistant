@@ -1,12 +1,11 @@
 from config import Config
 
 Config.DATABASE_URL = 'sqlite+aiosqlite:///:memory:'
-from app.injector import container
-from app.model import Base
-
 import pytest
 from fastapi.testclient import TestClient
 
+from app.injector import container
+from app.model import Base
 from main import app
 
 

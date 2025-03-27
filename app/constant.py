@@ -11,4 +11,3 @@ class MessageType(str, Enum):
 class Role(str, Enum):
     USER = 'user'
     BOT = 'bot'
-

@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Text, ForeignKey
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.constant import MessageType, Role
@@ -20,7 +20,9 @@ class Message(Base):
     def validate(self):
         """Validates message fields before saving to the database."""
         self.role = validate_enum(self.role, enum=Role, field_name='role')
-        self.message_type = validate_enum(self.message_type, enum=MessageType, field_name='message_type')
+        self.message_type = validate_enum(
+            self.message_type, enum=MessageType, field_name='message_type'
+        )
         if self.message_type == MessageType.TEXT:
             if not self.content:
                 raise ValidationError('content is required for text message')
@@ -29,4 +31,3 @@ class Message(Base):
             raise ValidationError('file_path is required for image/audio/video message')
 
         # TODO: more validation
-
