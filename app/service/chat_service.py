@@ -3,7 +3,8 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.constant import WSReceiveType
+from app.constant import WSDataType, WSReceiveType
+from app.schema.chat_schema import ReceiveMessage
 from app.service.conversation_service import ConversationService
 from app.service.user_service import UserService
 
@@ -28,21 +29,29 @@ class ChatService:
             while True:
                 try:
                     data = await websocket.receive()
-                    ws_receive_type = data.get('type', '')
-                    if ws_receive_type == WSReceiveType.DISCONNECT:
+                    receive_message = ReceiveMessage.model_validate(data)
+                    if receive_message.type == WSReceiveType.DISCONNECT:
                         raise WebSocketDisconnect
-
-                    if 'text' in data:
-                        logging.debug('Received text: %s', data['text'])
-                        await websocket.send_text(f"Server received: {data['text']}")
-
-                    elif 'bytes' in data:
-                        logging.debug(
-                            'Received binary data, length: %d', len(data['bytes'])
-                        )
-                        await websocket.send_text(
-                            f"Received {len(data['bytes'])} bytes of binary data"
-                        )
+                    elif receive_message.type == WSReceiveType.RECEIVE:
+                        if receive_message.data_type == WSDataType.TEXT_MESSAGE:
+                            logging.debug(
+                                'Received text: %s', receive_message.text_message
+                            )
+                            await websocket.send_text(
+                                f'Server received: {receive_message.text_message}'
+                            )
+                        elif receive_message.data_type == WSDataType.BYTES_MESSAGE:
+                            logging.debug(
+                                'Received binary data, length: %d',
+                                len(receive_message.bytes_message),
+                            )
+                            await websocket.send_text(
+                                f'Received {len(receive_message.bytes_message)} bytes of binary data'
+                            )
+                        elif receive_message.data_type == WSDataType.TIMEZONE:
+                            logging.debug(
+                                'Received timezone: %s', receive_message.timezone
+                            )
                 except RuntimeError as e:
                     logging.error('RuntimeError: %s', e)
                     break

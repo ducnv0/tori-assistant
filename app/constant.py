@@ -16,3 +16,11 @@ class Role(str, Enum):
 class WSReceiveType(str, Enum):
     RECEIVE = 'websocket.receive'
     DISCONNECT = 'websocket.disconnect'
+    OTHER = 'other'
+
+
+class WSDataType(str, Enum):
+    TEXT_MESSAGE = 'text_message'
+    BYTES_MESSAGE = 'bytes_message'
+    TIMEZONE = 'timezone'
+    OTHER = 'other'

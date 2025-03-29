@@ -217,14 +217,14 @@
             if (isConnected.value) {
               clearInterval(checkConnection);
               if (message.value.trim()) {
-                ws.value.send(message.value);
+                ws.value.send(JSON.stringify({ text: message.value })); // Modified to send message in the new format
                 addMessage(message.value, "user-message");
                 message.value = "";
               }
             }
           }, 100);
         } else if (isConnected.value && message.value.trim()) {
-          ws.value.send(message.value);
+          ws.value.send(JSON.stringify({ text: message.value })); // Modified to send message in the new format
           addMessage(message.value, "user-message");
           message.value = "";
         }
