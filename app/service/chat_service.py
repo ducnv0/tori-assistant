@@ -1,5 +1,6 @@
 import logging
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.constant import WSReceiveType
@@ -14,11 +15,16 @@ class ChatService:
         self.user_service = user_service
         self.conversation_service = conversation_service
 
-    async def handle_chat(self, websocket: WebSocket):
-        await websocket.accept()
-        logging.info('Client connected')
-
+    async def handle_chat(
+        self, db: AsyncSession, conversation_id: int, websocket: WebSocket
+    ):
         try:
+            # Ensure the conversation exists
+            await self.conversation_service.find_by_id(db, conversation_id)
+
+            await websocket.accept()
+            logging.info('Client connected')
+
             while True:
                 try:
                     data = await websocket.receive()

@@ -157,10 +157,15 @@
       const conversations = ref([]);
       const selectedConversation = ref(null);
 
-      const connect = () => {
+      const connect = async () => {
         if (isConnected.value || isConnecting.value) return;
+        if (!selectedConversation.value) {
+            await createConversation(); // Ensure a conversation exists
+        }
+        if (!selectedConversation.value) return; // Exit if conversation creation fails
         isConnecting.value = true;
-        ws.value = new WebSocket("ws://localhost:8000/api/chat");
+        const convId = selectedConversation.value.id;
+        ws.value = new WebSocket(`ws://localhost:8000/api/chat?conversation_id=${convId}`);
 
         ws.value.onopen = () => {
           isConnected.value = true;
@@ -268,16 +273,20 @@
       const fetchUserMessages = async () => {
         if (!selectedUser.value || !selectedConversation.value) return;
         try {
-          const response = await fetch(`http://localhost:8000/api/conversation/${selectedConversation.value.id}/messages`);
-          const data = await response.json();
-          messages.value = data.messages.map(msg => ({
-            id: msg.id,
-            content: msg.content,
-            type: msg.sender === selectedUser.value ? 'user-message' : 'server-message'
-          }));
-          await fetchConversations(); // Reload conversations when user is reselected
+            const response = await fetch(`http://localhost:8000/api/message?conversation_id=${selectedConversation.value.id}&page=1&page_size=10`);
+            const data = await response.json();
+            if (data.data) {
+                messages.value = data.data.map(msg => ({
+                    id: msg.id,
+                    content: msg.content,
+                    type: msg.sender === selectedUser.value ? 'user-message' : 'server-message'
+                }));
+            } else {
+                messages.value = [];
+            }
+            await fetchConversations(); // Reload conversations when user is reselected
         } catch (error) {
-          console.error('Error fetching user messages:', error);
+            console.error('Error fetching user messages:', error);
         }
       };
 
