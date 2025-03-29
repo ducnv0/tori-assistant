@@ -2,6 +2,7 @@ import logging
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat_api import chat_router
 from app.api.conversation_api import conversation_router
@@ -12,7 +13,21 @@ from config import Config
 # Configuration settings
 logging.basicConfig(level=Config.LOGGING_LEVEL)
 
+
+# Apply the filter to the aiosqlite logger
+aiosqlite_logger = logging.getLogger('aiosqlite').setLevel(logging.INFO)
+
 app = FastAPI()
+
+# Add CORS middleware
+# Just for testing purpose, allow all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=['*'],  # Allow all methods
+    allow_headers=['*'],  # Allow all headers
+)
 
 app.include_router(user_router, prefix='/api')
 app.include_router(conversation_router, prefix='/api')

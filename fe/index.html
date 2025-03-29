@@ -53,32 +53,90 @@
         #fileInput {
             display: none;
         }
+        .nav-link {
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .main-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+        .sidebar {
+            width: 250px;
+            background: #343a40;
+            color: white;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .conversation-item {
+            padding: 10px;
+            border-bottom: 1px solid #495057;
+            cursor: pointer;
+        }
+        .conversation-item:hover {
+            background: #495057;
+        }
+        .user-select {
+            margin-top: auto;
+            margin-bottom: 15px;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
 <div id="app">
-    <div class="chat-container">
-        <h4 class="text-center">Vue WebSocket Chat</h4>
-        <div class="alert text-center p-2" :class="isConnected ? 'alert-success' : 'alert-danger'">
-            Status: {{ isConnected ? 'Connected' : 'Disconnected' }}
-        </div>
-
-        <div class="messages d-flex flex-column" ref="messageBox">
-            <div v-for="msg in messages" :key="msg.id" class="message" :class="msg.type">
-                <div v-html="msg.content"></div>
+    <div class="main-container">
+        <div class="sidebar">
+            <h5>Conversations</h5>
+            <button class="btn btn-primary w-100 mb-2" @click="createConversation" :disabled="!selectedUser">+</button>
+            <div v-for="conversation in conversations" :key="conversation.id" class="conversation-item" @click="selectedUser ? selectConversation(conversation) : null" :class="{ 'disabled': !selectedUser }">
+                {{ conversation.title }}
+            </div>
+            <div class="user-select mt-auto">
+                <label for="userSelect" class="form-label">Login:</label>
+                <select id="userSelect" class="form-select" v-model="selectedUser" @change="selectedUser ? (fetchConversations(), fetchUserMessages()) : null">
+                    <option v-for="user in users" :key="user.id" :value="user.id">{{ user.username }}</option>
+                </select>
             </div>
         </div>
+        <div class="chat-container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="mb-0">Vue WebSocket Chat</h4>
+                <a href="admin.html" class="nav-link text-primary">Admin Panel</a>
+            </div>
+            <div class="alert text-center p-2 d-flex align-items-center justify-content-center" :class="isConnected ? 'alert-success' : 'alert-danger'">
+                <span>Status: {{ isConnected ? 'Connected' : 'Disconnected' }}</span>
+                <span v-if="isConnecting" class="ms-2 spinner-border spinner-border-sm"></span>
+            </div>
 
-        <div class="d-flex gap-2 mt-2">
-            <button class="btn btn-outline-secondary" @click="pickFile" :disabled="!isConnected">+</button>
-            <input type="file" id="fileInput" ref="fileInput" accept="image/*,audio/*,video/*" @change="sendFile">
-            <input type="text" v-model="message" class="form-control" placeholder="Type a message..." :disabled="!isConnected" @keyup.enter="sendMessage">
-            <button class="btn btn-primary" @click="sendMessage" :disabled="!isConnected || !message.trim()">Send</button>
+            <div class="messages d-flex flex-column" ref="messageBox">
+                <div v-for="msg in messages" :key="msg.id" class="message" :class="msg.type">
+                    <div v-html="msg.content"></div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-outline-secondary" @click="pickFile" :disabled="!selectedUser || !isConnected">+</button>
+                <input type="file" id="fileInput" ref="fileInput" accept="image/*,audio/*,video/*" @change="sendFile">
+                <input type="text" v-model="message" class="form-control" placeholder="Type a message..." :disabled="!selectedUser || !isConnected" @keyup.enter="sendMessage">
+                <button class="btn btn-primary" @click="sendMessage" :disabled="!selectedUser || !isConnected || !message.trim()">Send</button>
+            </div>
+
+            <button class="btn w-100 mt-2" :class="isConnected ? 'btn-danger' : 'btn-success'" @click="toggleConnection">
+                {{ isConnected ? 'Disconnect' : 'Connect' }}
+            </button>
         </div>
-
-        <button class="btn w-100 mt-2" :class="isConnected ? 'btn-danger' : 'btn-success'" @click="toggleConnection">
-            {{ isConnected ? 'Disconnect' : 'Connect' }}
-        </button>
     </div>
 </div>
 
@@ -89,32 +147,27 @@
     setup() {
       const ws = ref(null);
       const isConnected = ref(false);
+      const isConnecting = ref(false);
       const messages = ref([]);
       const message = ref("");
       const fileInput = ref(null);
       const messageBox = ref(null);
-
-      const toggleConnection = () => {
-        if (isConnected.value) {
-          disconnect();
-        } else {
-          connect();
-        }
-      };
+      const users = ref([]);
+      const selectedUser = ref(null);
+      const conversations = ref([]);
+      const selectedConversation = ref(null);
 
       const connect = () => {
-        if (ws.value) {
-          ws.value.close();
-        }
+        if (isConnected.value || isConnecting.value) return;
+        isConnecting.value = true;
         ws.value = new WebSocket("ws://localhost:8000/api/chat");
 
         ws.value.onopen = () => {
-          console.log("WebSocket connected");
           isConnected.value = true;
+          isConnecting.value = false;
         };
 
         ws.value.onmessage = (event) => {
-          console.log("WebSocket message received:", event.data);
           if (typeof event.data === "string") {
             addMessage(event.data, "server-message");
           } else {
@@ -123,27 +176,27 @@
         };
 
         ws.value.onclose = () => {
-          console.log("WebSocket disconnected");
           isConnected.value = false;
           ws.value = null;
+          isConnecting.value = false;
+          setTimeout(connect, 3000); // Auto-reconnect
         };
 
-        ws.value.onerror = (error) => {
-          console.error("WebSocket Error:", error);
+        ws.value.onerror = () => {
+          isConnecting.value = false;
         };
       };
 
       const disconnect = () => {
-        if (ws.value) {
-          console.log("WebSocket disconnecting");
-          ws.value.close();
-        }
+        if (ws.value) ws.value.close();
+      };
+
+      const toggleConnection = () => {
+        isConnected.value ? disconnect() : connect();
       };
 
       const sendMessage = () => {
         if (!isConnected.value || !message.value.trim()) return;
-
-        console.log("Sending message:", message.value);
         ws.value.send(message.value);
         addMessage(message.value, "user-message");
         message.value = "";
@@ -155,19 +208,11 @@
         const file = fileInput.value.files[0];
         if (!file) return;
 
-        const allowedTypes = ["image", "audio", "video"];
         const fileType = file.type.split("/")[0];
-
-        if (!allowedTypes.includes(fileType)) {
-          alert("Only images, audio, and video files are allowed!");
-          return;
-        }
-
         const reader = new FileReader();
+
         reader.onload = function (event) {
-          const arrayBuffer = event.target.result;
-          console.log("Sending file:", file.name);
-          ws.value.send(arrayBuffer);
+          ws.value.send(event.target.result);
 
           let preview = "";
           if (fileType === "image") {
@@ -177,19 +222,12 @@
           } else if (fileType === "video") {
             preview = `<video controls width="150"><source src="${URL.createObjectURL(file)}"></video>`;
           }
-
           addMessage(`📁 You sent: ${file.name} <br>${preview}`, "user-message");
+          setTimeout(() => URL.revokeObjectURL(preview), 5000);
         };
 
         reader.readAsArrayBuffer(file);
         fileInput.value.value = "";
-      };
-
-      const handleBinaryMessage = (data) => {
-        console.log("Handling binary message");
-        const blob = new Blob([data]);
-        const url = URL.createObjectURL(blob);
-        addMessage(`<a href="${url}" download>📁 Received file</a>`, "server-message");
       };
 
       const addMessage = (content, type) => {
@@ -201,23 +239,78 @@
         }, 50);
       };
 
-      const pickFile = () => {
-        fileInput.value.click();
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch('http://localhost:8000/api/user?page=1&page_size=10');
+          const data = await response.json();
+          users.value = data.data;
+        } catch (error) {
+          console.error('Error fetching users:', error);
+        }
+      };
+
+      const fetchConversations = async () => {
+        if (!selectedUser.value) return;
+        try {
+          const response = await fetch(`http://localhost:8000/api/conversation?user_id=${selectedUser.value}&page=1&page_size=10`);
+          const data = await response.json();
+          conversations.value = data.data;
+        } catch (error) {
+          console.error('Error fetching conversations:', error);
+        }
+      };
+
+      const selectConversation = (conversation) => {
+        selectedConversation.value = conversation;
+        fetchUserMessages();
+      };
+
+      const fetchUserMessages = async () => {
+        if (!selectedUser.value || !selectedConversation.value) return;
+        try {
+          const response = await fetch(`http://localhost:8000/api/conversation/${selectedConversation.value.id}/messages`);
+          const data = await response.json();
+          messages.value = data.messages.map(msg => ({
+            id: msg.id,
+            content: msg.content,
+            type: msg.sender === selectedUser.value ? 'user-message' : 'server-message'
+          }));
+          await fetchConversations(); // Reload conversations when user is reselected
+        } catch (error) {
+          console.error('Error fetching user messages:', error);
+        }
+      };
+
+      const createConversation = async () => {
+        if (!selectedUser.value) return;
+
+        try {
+            const response = await fetch('http://localhost:8000/api/conversation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: selectedUser.value, title: 'New Conversation' })
+            });
+
+            if (!response.ok) throw new Error('Failed to create conversation');
+
+            await fetchConversations(); // Refresh the conversation list
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+        }
       };
 
       onMounted(() => {
         connect();
+        fetchUsers();
       });
 
-      onBeforeUnmount(() => {
-        disconnect();
-      });
+      onBeforeUnmount(disconnect);
 
-      return { messages, message, isConnected, toggleConnection, sendMessage, sendFile, pickFile, fileInput, messageBox };
+      return {
+        messages, message, isConnected, isConnecting, toggleConnection, sendMessage, sendFile, fileInput, messageBox, users, selectedUser, fetchUserMessages, pickFile: () => fileInput.value.click(), conversations, fetchConversations, selectConversation, createConversation
+      };
     }
   }).mount("#app");
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
