@@ -19,6 +19,15 @@ class ConversationRepository:
         await db.refresh(conversation)
         return conversation
 
+    async def update(
+        self,
+        db: AsyncSession,
+        conversation: Conversation,
+    ) -> Conversation:
+        await db.commit()
+        await db.refresh(conversation)
+        return conversation
+
     async def search(
         self,
         db: AsyncSession,

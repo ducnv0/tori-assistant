@@ -57,3 +57,16 @@ class TestConversationAPI(ConversationFixture):
             conversation_1.id,
             conversation_3.id,
         }
+
+    def test_success_update_conversation(self, client, conversation_1, user_1):
+        # Arrange
+        payload = {
+            'title': 'update_title',
+        }
+        # Act
+        response = client.put(f'/api/conversation/{conversation_1.id}', json=payload)
+        # Assert
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert data['title'] == 'update_title'
+        assert data['id'] == conversation_1.id

@@ -5,6 +5,7 @@ from app.injector import container
 from app.schema.conversation_schema import (
     ConversationCreateRequest,
     ConversationResponse,
+    ConversationUpdateRequest,
     ListConversationResponse,
 )
 
@@ -19,6 +20,15 @@ async def create(
     db: Session = Depends(get_db),
 ) -> ConversationResponse:
     return await conversation_service.create(db, req)
+
+
+@conversation_router.put('/conversation/{_id}')
+async def update(
+    _id: int,
+    req: ConversationUpdateRequest,
+    db: Session = Depends(get_db),
+) -> ConversationResponse:
+    return await conversation_service.update(db, _id, req)
 
 
 @conversation_router.get('/conversation/{_id}')

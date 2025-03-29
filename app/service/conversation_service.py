@@ -3,7 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.exception import NotFoundError
 from app.model import Conversation
 from app.repository.conversation_repository import ConversationRepository
-from app.schema.conversation_schema import ConversationCreateRequest
+from app.schema.conversation_schema import (
+    ConversationCreateRequest,
+    ConversationUpdateRequest,
+)
 from app.service.user_service import UserService
 
 
@@ -31,6 +34,16 @@ class ConversationService:
         conversation = Conversation(user_id=req.user_id, title=req.title)
         conversation.validate()
         return await self.conversation_repository.create(db, conversation)
+
+    async def update(
+        self,
+        db: AsyncSession,
+        _id: int,
+        req: ConversationUpdateRequest,
+    ) -> Conversation:
+        conversation = await self.find_by_id(db, _id)
+        conversation.title = req.title
+        return await self.conversation_repository.update(db, conversation)
 
     async def search(
         self, db: AsyncSession, user_id: int, page: int, page_size: int

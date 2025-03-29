@@ -6,6 +6,10 @@ class ConversationCreateRequest(BaseModel):
     title: str
 
 
+class ConversationUpdateRequest(BaseModel):
+    title: str
+
+
 class ConversationResponse(ConversationCreateRequest):
     model_config = ConfigDict(from_attributes=True)
 
