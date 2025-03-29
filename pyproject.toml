@@ -3,7 +3,13 @@ quote-style = "single"
 
 [tool.ruff]
 exclude = ["alembic"]
-lint.extend-select = ["I", "F401"]
+lint.extend-select = [
+    "I",
+    "F401",
+]
+ignore = [
+    "F841", # Local variable `conversation_3` is assigned to but never used
+]
 
 [tool.ruff.per-file-ignores]
 "test/conftest.py" = ["E402"]

@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 29f401e0c228
+Revision ID: a47ec0987478
 Revises: 
-Create Date: 2025-03-26 00:11:28.519033
+Create Date: 2025-03-29 22:03:17.536212
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '29f401e0c228'
+revision: str = 'a47ec0987478'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -39,12 +39,11 @@ def upgrade() -> None:
     op.create_table('message',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('conversation_id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('role', sa.String(), nullable=False),
     sa.Column('message_type', sa.String(), nullable=False),
     sa.Column('content', sa.Text(), nullable=True),
     sa.Column('file_path', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['conversation_id'], ['conversation.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_message_id'), 'message', ['id'], unique=False)
