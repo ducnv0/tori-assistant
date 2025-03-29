@@ -4,6 +4,7 @@ from app.model import Database
 from app.repository.conversation_repository import ConversationRepository
 from app.repository.message_repository import MessageRepository
 from app.repository.user_repository import UserRepository
+from app.service.chat_service import ChatService
 from app.service.conversation_service import ConversationService
 from app.service.message_service import MessageService
 from app.service.user_service import UserService
@@ -24,6 +25,11 @@ class Container(containers.DeclarativeContainer):
     message_service = providers.Factory(
         MessageService,
         message_repository=message_repository,
+        conversation_service=conversation_service,
+    )
+    chat_service = providers.Factory(
+        ChatService,
+        user_service=user_service,
         conversation_service=conversation_service,
     )
 

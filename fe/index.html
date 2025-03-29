@@ -109,10 +109,12 @@
         ws.value = new WebSocket("ws://localhost:8000/api/chat");
 
         ws.value.onopen = () => {
+          console.log("WebSocket connected");
           isConnected.value = true;
         };
 
         ws.value.onmessage = (event) => {
+          console.log("WebSocket message received:", event.data);
           if (typeof event.data === "string") {
             addMessage(event.data, "server-message");
           } else {
@@ -121,15 +123,19 @@
         };
 
         ws.value.onclose = () => {
+          console.log("WebSocket disconnected");
           isConnected.value = false;
           ws.value = null;
         };
 
-        ws.value.onerror = (error) => console.error("WebSocket Error:", error);
+        ws.value.onerror = (error) => {
+          console.error("WebSocket Error:", error);
+        };
       };
 
       const disconnect = () => {
         if (ws.value) {
+          console.log("WebSocket disconnecting");
           ws.value.close();
         }
       };
@@ -137,6 +143,7 @@
       const sendMessage = () => {
         if (!isConnected.value || !message.value.trim()) return;
 
+        console.log("Sending message:", message.value);
         ws.value.send(message.value);
         addMessage(message.value, "user-message");
         message.value = "";
@@ -159,6 +166,7 @@
         const reader = new FileReader();
         reader.onload = function (event) {
           const arrayBuffer = event.target.result;
+          console.log("Sending file:", file.name);
           ws.value.send(arrayBuffer);
 
           let preview = "";
@@ -178,6 +186,7 @@
       };
 
       const handleBinaryMessage = (data) => {
+        console.log("Handling binary message");
         const blob = new Blob([data]);
         const url = URL.createObjectURL(blob);
         addMessage(`<a href="${url}" download>📁 Received file</a>`, "server-message");

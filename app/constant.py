@@ -11,3 +11,8 @@ class MessageType(str, Enum):
 class Role(str, Enum):
     USER = 'user'
     BOT = 'bot'
+
+
+class WSReceiveType(str, Enum):
+    RECEIVE = 'websocket.receive'
+    DISCONNECT = 'websocket.disconnect'
