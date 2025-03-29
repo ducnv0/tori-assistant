@@ -101,6 +101,11 @@
             color: #007bff;
             text-decoration: underline;
         }
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -129,11 +134,15 @@
                 <h5 class="mb-0">{{ selectedConversation ? selectedConversation.title : 'Select a conversation' }}</h5>
                 <span v-if="selectedConversation" class="edit-title" @click="editTitle">Edit Title</span>
             </div>
-            <div class="alert text-center p-2 d-flex align-items-center justify-content-center" :class="isConnected ? 'alert-success' : 'alert-danger'">
-                <span>Status: {{ isConnected ? 'Connected' : 'Disconnected' }}</span>
-                <span v-if="isConnecting" class="ms-2 spinner-border spinner-border-sm"></span>
+            <div class="d-flex justify-content-between align-items-center mb-2 status-container">
+                <div class="alert text-center p-2 d-flex align-items-center justify-content-center" :class="isConnected ? 'alert-success' : 'alert-danger'">
+                    <span>Status: {{ isConnected ? 'Connected' : 'Disconnected' }}</span>
+                    <span v-if="isConnecting" class="ms-2 spinner-border spinner-border-sm"></span>
+                </div>
+                <button class="btn" :class="isConnected ? 'btn-outline-danger' : 'btn-outline-primary'" @click="isConnected ? disconnectWebSocket() : connect()" :disabled="isConnecting || !selectedConversation">
+                    {{ isConnected ? 'Disconnect' : 'Connect' }}
+                </button>
             </div>
-
             <div class="messages d-flex flex-column" ref="messageBox">
                 <div v-for="msg in messages" :key="msg.id" class="message" :class="msg.type">
                     <div v-html="msg.content"></div>
@@ -402,7 +411,7 @@
       });
 
       return {
-        messages, message, isConnected, isConnecting, sendMessage, sendFile, fileInput, messageBox, users, selectedUser, fetchUserMessages, pickFile: () => fileInput.value.click(), conversations, fetchConversations, selectConversation, createConversation, selectedConversation, editTitle, logout // Add selectedConversation, editTitle, and logout to the returned properties
+        messages, message, isConnected, isConnecting, sendMessage, sendFile, fileInput, messageBox, users, selectedUser, fetchUserMessages, pickFile: () => fileInput.value.click(), conversations, fetchConversations, selectConversation, createConversation, selectedConversation, editTitle, logout, connect, disconnectWebSocket // Add connect and disconnectWebSocket to the returned properties
       };
     }
   }).mount("#app");
