@@ -117,6 +117,7 @@
                 <select id="userSelect" class="form-select" v-model="selectedUser" @change="selectedUser ? (fetchConversations(), fetchUserMessages()) : null">
                     <option v-for="user in users" :key="user.id" :value="user.id">{{ user.username }}</option>
                 </select>
+                <button class="btn btn-danger w-100 mt-2" @click="logout">Logout</button> <!-- Added logout button -->
             </div>
         </div>
         <div class="chat-container">
@@ -162,9 +163,9 @@
       const fileInput = ref(null);
       const messageBox = ref(null);
       const users = ref([]);
-      const selectedUser = ref(null);
+      const selectedUser = ref(localStorage.getItem('selectedUser') || null); // Retrieve selected user from localStorage
       const conversations = ref([]);
-      const selectedConversation = ref(null); // Define selectedConversation
+      const selectedConversation = ref(JSON.parse(localStorage.getItem('selectedConversation')) || null); // Retrieve selected conversation from localStorage
 
       const connect = () => {
         if (isConnected.value || isConnecting.value) return;
@@ -231,6 +232,7 @@
       const selectConversation = (conversation) => {
         disconnectWebSocket();
         selectedConversation.value = conversation;
+        localStorage.setItem('selectedConversation', JSON.stringify(conversation)); // Store selected conversation in localStorage
         message.value = ""; // Clear message input
         fetchUserMessages(); // Load messages for the selected conversation
       };
@@ -362,8 +364,25 @@
         }
       };
 
+      const logout = () => {
+        selectedUser.value = null;
+        selectedConversation.value = null;
+        localStorage.removeItem('selectedUser');
+        localStorage.removeItem('selectedConversation');
+        messages.value = [];
+        conversations.value = []; // Clear the conversation panel
+        disconnectWebSocket();
+      };
+
       onMounted(() => {
         fetchUsers();
+        if (selectedUser.value) {
+          fetchConversations();
+          fetchUserMessages();
+        }
+        if (selectedConversation.value) {
+          fetchUserMessages();
+        }
       });
 
       onBeforeUnmount(() => {
@@ -372,8 +391,10 @@
 
       watch(selectedUser, (newUser, oldUser) => {
         if (newUser !== oldUser) {
+          localStorage.setItem('selectedUser', newUser); // Store selected user in localStorage
           disconnectWebSocket();
           selectedConversation.value = null; // Clear selected conversation
+          localStorage.removeItem('selectedConversation'); // Remove selected conversation from localStorage
           messages.value = []; // Clear chatbox content
           fetchConversations();
           fetchUserMessages();
@@ -381,7 +402,7 @@
       });
 
       return {
-        messages, message, isConnected, isConnecting, sendMessage, sendFile, fileInput, messageBox, users, selectedUser, fetchUserMessages, pickFile: () => fileInput.value.click(), conversations, fetchConversations, selectConversation, createConversation, selectedConversation, editTitle // Add selectedConversation and editTitle to the returned properties
+        messages, message, isConnected, isConnecting, sendMessage, sendFile, fileInput, messageBox, users, selectedUser, fetchUserMessages, pickFile: () => fileInput.value.click(), conversations, fetchConversations, selectConversation, createConversation, selectedConversation, editTitle, logout // Add selectedConversation, editTitle, and logout to the returned properties
       };
     }
   }).mount("#app");
