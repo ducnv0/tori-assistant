@@ -26,6 +26,7 @@ class ChatService:
             await websocket.accept()
             logging.info('Client connected')
 
+            timezone = None
             while True:
                 try:
                     data = await websocket.receive()
@@ -52,6 +53,8 @@ class ChatService:
                             logging.debug(
                                 'Received timezone: %s', receive_message.timezone
                             )
+                            timezone = receive_message.timezone
+                            # TODO: validate timezone?
                 except RuntimeError as e:
                     logging.error('RuntimeError: %s', e)
                     break

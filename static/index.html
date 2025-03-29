@@ -187,6 +187,8 @@
         ws.value.onopen = () => {
           isConnected.value = true;
           isConnecting.value = false;
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Get user's timezone
+          ws.value.send(JSON.stringify({ timezone: timezone })); // Send timezone to the server
         };
 
         ws.value.onmessage = (event) => {
@@ -285,7 +287,7 @@
           } else if (fileType === "video") {
             preview = `<video controls width="150"><source src="${URL.createObjectURL(file)}"></video>`;
           }
-          addMessage(`📁 You sent: ${file.name} <br>${preview}`, "user-message");
+          addMessage(preview, "user-message");
           setTimeout(() => URL.revokeObjectURL(preview), 5000);
         };
 
