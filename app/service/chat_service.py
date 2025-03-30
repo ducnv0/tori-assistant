@@ -145,12 +145,16 @@ class ChatService:
                                     db,
                                     message_id=user_message.id,
                                 )
-                                for message_id in response_ids:
-                                    message_response = (
-                                        await self.message_service.read_message(
+                                response_tasks = [
+                                    asyncio.create_task(
+                                        self.message_service.read_message(
                                             db, _id=message_id
                                         )
                                     )
+                                    for message_id in response_ids
+                                ]
+                                for task in response_tasks:
+                                    message_response = await task
                                     ws_response = (
                                         WSResponseMessage.from_message_response(
                                             message_response
