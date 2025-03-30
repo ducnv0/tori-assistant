@@ -23,13 +23,15 @@ VIDEO_EXTENSIONS = {it.EXTENSION for it in VIDEO}
 IMAGE_EXTENSIONS = {it.EXTENSION for it in IMAGE}
 
 
-def check_file_type(filelike: str | bytes) -> WSDataType:
+def check_file_type(filelike: str | bytes) -> (WSDataType, str):
     kind = filetype.guess(filelike)
+    mine = None
     if kind:
+        mine = kind.mime
         if kind.extension in AUDIO_EXTENSIONS:
-            return WSDataType.AUDIO_MESSAGE
+            return WSDataType.AUDIO_MESSAGE, mine
         elif kind.extension in VIDEO_EXTENSIONS:
-            return WSDataType.VIDEO_MESSAGE
+            return WSDataType.VIDEO_MESSAGE, mine
         elif kind.extension in IMAGE_EXTENSIONS:
-            return WSDataType.IMAGE_MESSAGE
-    return WSDataType.OTHER
+            return WSDataType.IMAGE_MESSAGE, mine
+    return WSDataType.OTHER, mine

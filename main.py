@@ -1,5 +1,15 @@
-import asyncio
+# Configuration settings
 import logging
+
+from config import Config
+
+logging.basicConfig(level=Config.LOGGING_LEVEL)
+# Apply the filter to the aiosqlite logger
+aiosqlite_logger = logging.getLogger('aiosqlite').setLevel(logging.INFO)
+urllib3_logger = logging.getLogger('urllib3').setLevel(logging.INFO)
+
+
+import asyncio
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -13,14 +23,6 @@ from app.api.fe_api import fe_router
 from app.api.message_api import message_router
 from app.api.user_api import user_router
 from app.injector import container
-from config import Config
-
-# Configuration settings
-logging.basicConfig(level=Config.LOGGING_LEVEL)
-
-
-# Apply the filter to the aiosqlite logger
-aiosqlite_logger = logging.getLogger('aiosqlite').setLevel(logging.INFO)
 
 
 @asynccontextmanager

@@ -13,4 +13,5 @@ ignore = [
 
 [tool.ruff.per-file-ignores]
 "test/conftest.py" = ["E402"]
+"main.py" = ["E402"]
 "app/model/__init__.py" = ["F401"]

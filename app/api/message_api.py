@@ -11,7 +11,8 @@ get_db = container.database().get_db
 
 @message_router.get('/message/{_id}')
 async def find_by_id(_id: int, db: Session = Depends(get_db)) -> MessageResponse:
-    return await message_service.find_by_id(db, _id)
+    message = await message_service.find_by_id(db, _id)
+    return await message_service.read_message(db, message)
 
 
 @message_router.get('/message')
@@ -25,5 +26,8 @@ async def search(
         db, conversation_id=conversation_id, page=page, page_size=page_size
     )
     return ListMessageResponse(
-        data=messages, page=page, page_size=page_size, total=total
+        data=[await message_service.read_message(db, message) for message in messages],
+        page=page,
+        page_size=page_size,
+        total=total,
     )

@@ -314,7 +314,7 @@
 
       const fetchUsers = async () => {
         try {
-          const response = await fetch('http://localhost:8000/api/user?page=1&page_size=10');
+          const response = await fetch('http://localhost:8000/api/user?page=1&page_size=1000');
           const data = await response.json();
           users.value = data.data;
         } catch (error) {
@@ -325,7 +325,7 @@
       const fetchConversations = async () => {
         if (!selectedUser.value) return;
         try {
-          const response = await fetch(`http://localhost:8000/api/conversation?user_id=${selectedUser.value}&page=1&page_size=10`);
+          const response = await fetch(`http://localhost:8000/api/conversation?user_id=${selectedUser.value}&page=1&page_size=1000`);
           const data = await response.json();
           conversations.value = data.data;
         } catch (error) {
@@ -336,11 +336,11 @@
       const fetchUserMessages = async () => {
         if (!selectedUser.value || !selectedConversation.value) return;
         try {
-          const response = await fetch(`http://localhost:8000/api/message?conversation_id=${selectedConversation.value.id}&page=1&page_size=10`);
+          const response = await fetch(`http://localhost:8000/api/message?conversation_id=${selectedConversation.value.id}&page=1&page_size=1000`);
           const data = await response.json();
           if (data.data) {
             messages.value = []; // Clear existing messages
-            data.data.forEach(msg => {
+            data.data.reverse().forEach(msg => {
               addMessage(msg.content, msg.role === 'user' ? 'user-message' : 'server-message', msg.message_type, msg.file_path);
             });
           } else {

@@ -18,5 +18,13 @@ class Config:
     )
     WS_MAX_SIMULTANEOUS_USERS = int(os.getenv('WS_MAX_SIMULTANEOUS_USERS', 50))
     WS_CHECK_TIMEZONE_CONSTRAINT = bool(
-        int(os.getenv('WS_CHECK_TIMEZONE_CONSTRAINT', 0))
+        int(os.getenv('WS_CHECK_TIMEZONE_CONSTRAINT', '0'))
+    )
+    MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'localhost:9000')
+    MINIO_BUCKET_NAME = os.getenv('MINIO_BUCKET_NAME', '')
+    MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', '')
+    MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY', '')
+    MINIO_SECURE = bool(int(os.getenv('MINIO_SECURE', '0')))
+    MINIO_PRESIGNED_URL_EXPIRES_IN_SECONDS = int(
+        os.getenv('MINIO_PRESIGNED_URL_EXPIRES_IN_SECONDS', 3600)
     )

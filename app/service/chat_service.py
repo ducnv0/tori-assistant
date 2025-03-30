@@ -6,9 +6,10 @@ import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.constant import WSDataType, WSReceiveType
+from app.constant import Role, WSDataType, WSReceiveType
 from app.schema.chat_schema import ReceiveMessage
 from app.service.conversation_service import ConversationService
+from app.service.message_service import MessageService
 from app.service.user_service import UserService
 from app.service.websocket_connection_service import WebsocketConnectionService
 from config import Config
@@ -20,10 +21,12 @@ class ChatService:
         user_service: UserService,
         conversation_service: ConversationService,
         websocket_connection_service: WebsocketConnectionService,
+        message_service: MessageService,
     ):
         self.user_service = user_service
         self.conversation_service = conversation_service
         self.websocket_connection_service = websocket_connection_service
+        self.message_service = message_service
 
     async def handle_chat(
         self, db: AsyncSession, conversation_id: int, websocket: WebSocket
@@ -93,6 +96,13 @@ class ChatService:
                                 logging.debug(
                                     'Received text: %s', receive_message.text_message
                                 )
+                                # save message to db
+                                await self.message_service.create_text_message(
+                                    db,
+                                    conversation_id=conversation.id,
+                                    role=Role.USER,
+                                    content=receive_message.text_message,
+                                )
                                 await websocket.send_text(
                                     f'Server received: {receive_message.text_message}'
                                 )
@@ -110,6 +120,19 @@ class ChatService:
                                     'Received %s data, length: %d',
                                     receive_message.data_type,
                                     len_bytes,
+                                )
+                                # save message to db
+                                await self.message_service.create_file_message(
+                                    db,
+                                    conversation_id=conversation.id,
+                                    role=Role.USER,
+                                    data=(
+                                        receive_message.audio_message
+                                        or receive_message.video_message
+                                        or receive_message.image_message
+                                    ),
+                                    message_type=receive_message.data_type.to_MESSAGE_TYPE(),
+                                    content_type=receive_message.mine_type,
                                 )
                                 await websocket.send_text(
                                     f'Received {len_bytes} bytes of {receive_message.data_type} data'

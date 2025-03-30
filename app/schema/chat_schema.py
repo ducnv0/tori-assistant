@@ -18,6 +18,7 @@ class ReceiveMessage(BaseModel):
 
     type: WSReceiveType
     data_type: WSDataType | None = None
+    mine_type: str | None = None
     text_message: str | None = None
     timezone: str | None = None
     image_message: bytes | None = None
@@ -50,7 +51,8 @@ class ReceiveMessage(BaseModel):
 
         bytes = values.get('bytes', None)
         if bytes:
-            file_type = check_file_type(bytes)
+            file_type, mine = check_file_type(bytes)
+            new_values['mine_type'] = mine
             if file_type == WSDataType.AUDIO_MESSAGE:
                 new_values['audio_message'] = bytes
             elif file_type == WSDataType.VIDEO_MESSAGE:
