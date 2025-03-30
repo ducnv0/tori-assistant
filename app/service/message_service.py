@@ -28,7 +28,13 @@ class MessageService:
             raise NotFoundError(f'Message with id {_id} not found')
         return message
 
-    async def read_message(self, db: AsyncSession, message: Message) -> MessageResponse:
+    async def read_message(
+        self, db: AsyncSession, message: Message | None = None, _id: int | None = None
+    ) -> MessageResponse:
+        if not _id and not message:
+            raise ValueError('Either _id or message must be provided')
+        if _id:
+            message = await self.find_by_id(db, _id)
         message_response = MessageResponse.model_validate(message)
         if message_response.file_path and not message_response.file_path.startswith(
             'http'

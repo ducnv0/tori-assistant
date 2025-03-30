@@ -106,6 +106,10 @@
             align-items: center;
             gap: 10px;
         }
+        .error-message {
+            background-color: #ffcccc;
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -193,7 +197,8 @@
 
         ws.value.onmessage = (event) => {
           if (typeof event.data === "string") {
-            addMessage(event.data, "server-message");
+            const parsedData = JSON.parse(event.data);
+            handleWebSocketResponse(parsedData);
           } else {
             handleBinaryMessage(event.data);
           }
@@ -208,6 +213,37 @@
         ws.value.onerror = () => {
           isConnecting.value = false;
         };
+      };
+
+      const handleWebSocketResponse = (data) => {
+        switch (data.data_type) {
+          case 'text_message':
+            addMessage(data.content, "server-message");
+            break;
+          case 'audio_message':
+            addMessage(`<audio controls src="${data.content}"></audio>`, "server-message");
+            break;
+          case 'video_message':
+            addMessage(`<video controls width="150"><source src="${data.content}"></video>`, "server-message");
+            break;
+          case 'image_message':
+            addMessage(`<img src="${data.content}" style="max-width: 100px; border-radius: 5px;">`, "server-message");
+            break;
+          case 'error':
+            markLatestUserMessageAsUnsuccessful();
+            alert(`Error: ${data.content}`); // Show error in a popup
+            break;
+          default:
+            console.warn('Unknown data type:', data.data_type);
+        }
+      };
+
+      const markLatestUserMessageAsUnsuccessful = () => {
+        const userMessages = messages.value.filter(msg => msg.type === 'user-message');
+        if (userMessages.length > 0) {
+          const latestUserMessage = userMessages[userMessages.length - 1];
+          latestUserMessage.type = 'user-message error-message';
+        }
       };
 
       const sendMessage = () => {

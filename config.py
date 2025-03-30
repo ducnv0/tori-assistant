@@ -28,3 +28,6 @@ class Config:
     MINIO_PRESIGNED_URL_EXPIRES_IN_SECONDS = int(
         os.getenv('MINIO_PRESIGNED_URL_EXPIRES_IN_SECONDS', 3600)
     )
+    EXAMPLE_IMAGE = 'static/example_image.jpg'
+    EXAMPLE_VIDEO = 'static/example_video.mp4'
+    EXAMPLE_AUDIO = 'static/example_audio.mp3'

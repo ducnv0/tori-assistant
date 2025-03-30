@@ -3,6 +3,7 @@ import json
 from pydantic import BaseModel, model_validator
 
 from app.constant import WSDataType, WSReceiveType
+from app.schema.message_schema import MessageResponse
 from app.util.common_util import check_file_type
 
 
@@ -88,3 +89,26 @@ class ReceiveMessage(BaseModel):
             WSDataType.VIDEO_MESSAGE,
             WSDataType.IMAGE_MESSAGE,
         ]
+
+
+class WSResponseMessage(BaseModel):
+    """
+    Example:
+    {'data_type':'text_message', 'content': 'Hello'}
+    {'data_type':'audio_message', 'content': 'http://minio.example.com/audio.mp3'}
+    {'data_type':'video_message', 'content': 'http://minio.example.com/video.mp4'}
+    {'data_type':'image_message', 'content': 'http://minio.example.com/image.jpg'}
+    {'data_type':'error', 'content': 'Error message'}
+    """
+
+    data_type: WSDataType
+    content: str
+
+    @staticmethod
+    def from_message_response(message_response: MessageResponse):
+        return WSResponseMessage(
+            data_type=WSDataType.from_MESSAGE_TYPE(message_response.message_type),
+            content=message_response.file_path
+            if message_response.file_path
+            else message_response.content,
+        )

@@ -25,6 +25,7 @@ class WSDataType(str, Enum):
     IMAGE_MESSAGE = 'image_message'
     VIDEO_MESSAGE = 'video_message'
     TIMEZONE = 'timezone'
+    ERROR = 'error'
     OTHER = 'other'
 
     def to_MESSAGE_TYPE(self):
@@ -38,3 +39,21 @@ class WSDataType(str, Enum):
             return MessageType.VIDEO
         else:
             raise ValueError(f'Invalid MessageType: {self}')
+
+    @staticmethod
+    def from_MESSAGE_TYPE(message_type: MessageType):
+        if message_type == MessageType.TEXT:
+            return WSDataType.TEXT_MESSAGE
+        elif message_type == MessageType.AUDIO:
+            return WSDataType.AUDIO_MESSAGE
+        elif message_type == MessageType.IMAGE:
+            return WSDataType.IMAGE_MESSAGE
+        elif message_type == MessageType.VIDEO:
+            return WSDataType.VIDEO_MESSAGE
+        else:
+            raise ValueError(f'Invalid MessageType: {message_type}')
+
+
+class WSResponseType(str, Enum):
+    ERROR = 'error'
+    MESSAGE = 'message'

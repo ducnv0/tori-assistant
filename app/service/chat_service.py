@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.constant import Role, WSDataType, WSReceiveType
-from app.schema.chat_schema import ReceiveMessage
+from app.schema.chat_schema import ReceiveMessage, WSResponseMessage
 from app.service.conversation_service import ConversationService
 from app.service.message_service import MessageService
+from app.service.task_service import TaskService
 from app.service.user_service import UserService
 from app.service.websocket_connection_service import WebsocketConnectionService
 from config import Config
@@ -22,11 +23,13 @@ class ChatService:
         conversation_service: ConversationService,
         websocket_connection_service: WebsocketConnectionService,
         message_service: MessageService,
+        task_service: TaskService,
     ):
         self.user_service = user_service
         self.conversation_service = conversation_service
         self.websocket_connection_service = websocket_connection_service
         self.message_service = message_service
+        self.task_service = task_service
 
     async def handle_chat(
         self, db: AsyncSession, conversation_id: int, websocket: WebSocket
@@ -91,20 +94,20 @@ class ChatService:
                                 ):
                                     continue
 
-                            # Process the message
+                            # Save message to db
+                            user_message = None
                             if receive_message.data_type == WSDataType.TEXT_MESSAGE:
                                 logging.debug(
                                     'Received text: %s', receive_message.text_message
                                 )
                                 # save message to db
-                                await self.message_service.create_text_message(
-                                    db,
-                                    conversation_id=conversation.id,
-                                    role=Role.USER,
-                                    content=receive_message.text_message,
-                                )
-                                await websocket.send_text(
-                                    f'Server received: {receive_message.text_message}'
+                                user_message = (
+                                    await self.message_service.create_text_message(
+                                        db,
+                                        conversation_id=conversation.id,
+                                        role=Role.USER,
+                                        content=receive_message.text_message,
+                                    )
                                 )
                             elif receive_message.data_type in [
                                 WSDataType.AUDIO_MESSAGE,
@@ -122,7 +125,7 @@ class ChatService:
                                     len_bytes,
                                 )
                                 # save message to db
-                                await self.message_service.create_file_message(
+                                user_message = await self.message_service.create_file_message(
                                     db,
                                     conversation_id=conversation.id,
                                     role=Role.USER,
@@ -134,10 +137,28 @@ class ChatService:
                                     message_type=receive_message.data_type.to_MESSAGE_TYPE(),
                                     content_type=receive_message.mine_type,
                                 )
-                                await websocket.send_text(
-                                    f'Received {len_bytes} bytes of {receive_message.data_type} data'
-                                )
 
+                            # Process message
+                            if user_message:
+                                # Outsource processing to Celery
+                                response_ids = await self.task_service.process_message(
+                                    db,
+                                    message_id=user_message.id,
+                                )
+                                for message_id in response_ids:
+                                    message_response = (
+                                        await self.message_service.read_message(
+                                            db, _id=message_id
+                                        )
+                                    )
+                                    ws_response = (
+                                        WSResponseMessage.from_message_response(
+                                            message_response
+                                        )
+                                    )
+                                    await websocket.send_text(
+                                        ws_response.model_dump_json()
+                                    )
                 except RuntimeError as e:
                     logging.error('RuntimeError: %s', e)
                     break
@@ -185,20 +206,26 @@ class ChatService:
         now = datetime.datetime.now(timezone)
         if message_data_type == WSDataType.TEXT_MESSAGE:
             if now.hour < 5:
-                await websocket.send_text(
-                    'Text chat is only allowed between 5 am and midnight'
+                error_message = WSResponseMessage(
+                    data_type=WSDataType.ERROR,
+                    content='Text chat is only allowed between 5 am and midnight',
                 )
+                await websocket.send_text(error_message.model_dump_json())
                 return False
         elif message_data_type in [WSDataType.VIDEO_MESSAGE, WSDataType.AUDIO_MESSAGE]:
             if now.hour < 20:
-                await websocket.send_text(
-                    'Video/Image chat is only allowed between 8 pm and midnight'
+                error_message = WSResponseMessage(
+                    data_type=WSDataType.ERROR,
+                    content='Video chat is only allowed between 8 pm and midnight',
                 )
+                await websocket.send_text(error_message.model_dump_json())
                 return False
         elif message_data_type == WSDataType.AUDIO_MESSAGE:
             if now.hour < 8 or now.hour > 12:
-                await websocket.send_text(
-                    'Voice chat is only allowed between 8 am and 12 pm'
+                error_message = WSResponseMessage(
+                    data_type=WSDataType.ERROR,
+                    content='Voice chat is only allowed between 8 am and 12 pm',
                 )
+                await websocket.send_text(error_message.model_dump_json())
                 return False
         return True
