@@ -162,3 +162,6 @@ What if the server crashes in the middle of connection, the connection will not 
 ### 4. All clients must send at least one message to the server
 - I quite don't understand this requirement. All clients must send at least one message to the server, If not what to expect?
 
+## Scalability
+- The system is designed to be scalable, with the ability to add more Celery workers to handle increased load.
+- Multiple API servers can be run behind a load balancer to distribute incoming requests -> Implement sticky sessions for WebSocket connections
