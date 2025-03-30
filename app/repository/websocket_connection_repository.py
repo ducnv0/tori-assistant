@@ -48,6 +48,12 @@ class WebsocketConnectionRepository:
         total_count = total_result.scalar()
         return total_count
 
+    async def count_connected_users(self, db: AsyncSession) -> int:
+        total_stmt = select(func.count(func.distinct(WebsocketConnection.user_id)))
+        total_result = await db.execute(total_stmt)
+        total_count = total_result.scalar()
+        return total_count
+
     async def search(
         self,
         db: AsyncSession,

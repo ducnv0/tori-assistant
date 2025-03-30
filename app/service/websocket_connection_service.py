@@ -20,6 +20,7 @@ class WebsocketConnectionService:
         """
         1 connection / user / conversation
         Config.WS_MAX_CONNECTIONS_PER_USER / user
+        Config.WS_MAX_SIMULTANEOUS_USERS / all users
         """
         # FIXME: Could race condition if two requests are made at the same time, should add lock for user_id
 
@@ -37,6 +38,13 @@ class WebsocketConnectionService:
             )
         )
         if connection_count >= Config.WS_MAX_CONNECTIONS_PER_USER:
+            return False
+
+        # Config.WS_MAX_SIMULTANEOUS_USERS / all users
+        connected_users_count = (
+            await self.websocket_connection_repository.count_connected_users(db)
+        )
+        if connected_users_count >= Config.WS_MAX_SIMULTANEOUS_USERS:
             return False
 
         connection = WebsocketConnection(

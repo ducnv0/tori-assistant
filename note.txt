@@ -16,6 +16,7 @@ response:
     voice: 1 text and 1 voice, 1-2s
     video: 1 text, 1 voice, 1 image 2-3s
 check time zone
-disconnect
-One client cannot make two connections to the server simultaneously.
-
+disconnect ok
+One client cannot make two connections to the server simultaneously. ok
+At any time, a maximum of 50 clients are allowed to communicate.
+At any time, a maximum of 500 messages are processed by the server.
