@@ -76,7 +76,7 @@ erDiagram
 ## System Architecture
 ```mermaid
 graph LR
-    Client -- 1. WS Message --> APIServer
+    Client -- WS Message --> APIServer
     APIServer -- 2. Save Media --> Minio
     APIServer -- 3. Save Message --> DB[(PostgreSQL)]
     APIServer -- 4. Send Task (message_id) --> Celery
