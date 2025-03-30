@@ -1,9 +1,10 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.model.user import User
+from app.model.base import Base
 from app.model.conversation import Conversation
 from app.model.message import Message
-from app.model.base import Base
+from app.model.user import User
+from app.model.websocket_connection import WebsocketConnection
 from config import Config
 
 

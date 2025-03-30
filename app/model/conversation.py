@@ -8,7 +8,7 @@ from app.model.base import Base
 class Conversation(Base):
     __tablename__ = 'conversation'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     title: Mapped[str] = mapped_column(String, default='New Conversation')
 

@@ -104,6 +104,7 @@ async def setup_data():
                 db=db,
                 req=MessageCreateRequest(**message_data),
             )
+        print('Successfully setup data')
 
 
 if __name__ == '__main__':

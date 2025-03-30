@@ -10,7 +10,7 @@ from app.util.validation_util import validate_enum
 class Message(Base):
     __tablename__ = 'message'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     conversation_id: Mapped[int] = mapped_column(ForeignKey('conversation.id'))
     role: Mapped[Role] = mapped_column(String)
     message_type: Mapped[MessageType] = mapped_column(String)
