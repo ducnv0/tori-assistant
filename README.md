@@ -77,17 +77,17 @@ erDiagram
 ```mermaid
 graph LR
     Client -- 1/WS Message --> APIServer
-    APIServer -- 2. Save Media --> Minio
-    APIServer -- 3. Save Message --> DB[(PostgreSQL)]
-    APIServer -- 4. Send Task (message_id) --> Celery
-    Celery -- 5. Process Message --> LLM
-    LLM -- 6. Response --> Celery
-    Celery -- 7. Save Response Message --> DB
-    Celery -- 8. Save Media --> Minio
-    Celery -- 9. Response message_id --> APIServer
-    APIServer -- 10. Read Response --> DB
-    APIServer -- 11. Get Pre-signed URL --> Minio
-    APIServer -- 12. Response to Client --> Client
+    APIServer -- 2/Save Media --> Minio
+    APIServer -- 3/Save Message --> DB[(PostgreSQL)]
+    APIServer -- 4/Send Task (message_id) --> Celery
+    Celery -- 5/Process Message --> LLM
+    LLM -- 6/Response --> Celery
+    Celery -- 7/Save Response Message --> DB
+    Celery -- 8/Save Media --> Minio
+    Celery -- 9/Response message_id --> APIServer
+    APIServer -- 10/Read Response --> DB
+    APIServer -- 11/Get Pre-signed URL --> Minio
+    APIServer -- 12/Response to Client --> Client
  ```
 
 ### API Server (FastAPI, SQLAlchemy)
