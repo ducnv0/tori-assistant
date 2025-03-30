@@ -40,6 +40,14 @@ Currently, there is an issue with the presigned Minio URL in Docker. To work aro
   pytest
   ```
 
+## Demo youtube video
+https://www.youtube.com/watch?v=DbrUxcl_cdY
+
+
+
+## Example End-to-End Flow
+Due to lack of time, I couldn't implement the load testing of the client
+
 ## Database Diagram
 
 ```mermaid
