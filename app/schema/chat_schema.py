@@ -3,6 +3,7 @@ import json
 from pydantic import BaseModel, model_validator
 
 from app.constant import WSDataType, WSReceiveType
+from app.util.common_util import check_file_type
 
 
 class ReceiveMessage(BaseModel):
@@ -19,7 +20,9 @@ class ReceiveMessage(BaseModel):
     data_type: WSDataType | None = None
     text_message: str | None = None
     timezone: str | None = None
-    bytes_message: bytes | None = None
+    image_message: bytes | None = None
+    audio_message: bytes | None = None
+    video_message: bytes | None = None
     raw_data: dict | None = None
 
     @model_validator(mode='before')
@@ -47,7 +50,13 @@ class ReceiveMessage(BaseModel):
 
         bytes = values.get('bytes', None)
         if bytes:
-            new_values['bytes_message'] = bytes
+            file_type = check_file_type(bytes)
+            if file_type == WSDataType.AUDIO_MESSAGE:
+                new_values['audio_message'] = bytes
+            elif file_type == WSDataType.VIDEO_MESSAGE:
+                new_values['video_message'] = bytes
+            elif file_type == WSDataType.IMAGE_MESSAGE:
+                new_values['image_message'] = bytes
 
         new_values['raw_data'] = values
         return new_values
@@ -57,10 +66,23 @@ class ReceiveMessage(BaseModel):
         if self.type == WSReceiveType.RECEIVE:
             if self.text_message:
                 self.data_type = WSDataType.TEXT_MESSAGE
-            elif self.bytes_message:
-                self.data_type = WSDataType.BYTES_MESSAGE
+            elif self.audio_message:
+                self.data_type = WSDataType.AUDIO_MESSAGE
+            elif self.video_message:
+                self.data_type = WSDataType.VIDEO_MESSAGE
+            elif self.image_message:
+                self.data_type = WSDataType.IMAGE_MESSAGE
             elif self.timezone:
                 self.data_type = WSDataType.TIMEZONE
             else:
                 self.data_type = WSDataType.OTHER
         return self
+
+    @property
+    def need_to_process(self):
+        return self.type == WSReceiveType.RECEIVE and self.data_type in [
+            WSDataType.TEXT_MESSAGE,
+            WSDataType.AUDIO_MESSAGE,
+            WSDataType.VIDEO_MESSAGE,
+            WSDataType.IMAGE_MESSAGE,
+        ]

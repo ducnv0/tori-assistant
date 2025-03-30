@@ -17,3 +17,6 @@ class Config:
         os.getenv('WS_PERIODICALLY_CLEAN_STALE_CONNECTIONS', 5)
     )
     WS_MAX_SIMULTANEOUS_USERS = int(os.getenv('WS_MAX_SIMULTANEOUS_USERS', 50))
+    WS_CHECK_TIMEZONE_CONSTRAINT = bool(
+        int(os.getenv('WS_CHECK_TIMEZONE_CONSTRAINT', 0))
+    )

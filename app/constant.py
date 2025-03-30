@@ -21,6 +21,8 @@ class WSReceiveType(str, Enum):
 
 class WSDataType(str, Enum):
     TEXT_MESSAGE = 'text_message'
-    BYTES_MESSAGE = 'bytes_message'
+    AUDIO_MESSAGE = 'audio_message'
+    IMAGE_MESSAGE = 'image_message'
+    VIDEO_MESSAGE = 'video_message'
     TIMEZONE = 'timezone'
     OTHER = 'other'
