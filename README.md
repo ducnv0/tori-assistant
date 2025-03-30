@@ -32,7 +32,13 @@ Currently, there is an issue with the presigned Minio URL in Docker. To work aro
       uvicorn main:app --port 8000
       ``` 
 6. Access the application at `http://localhost:8000`
+7. Access the API documentation at `http://localhost:8000/docs`
 
+### Run Unit Tests
+- To run the tests, use:
+  ```sh
+  pytest
+  ```
 
 ## Database Diagram
 
@@ -124,4 +130,35 @@ graph LR
 - **SQLAlchemy + PostgreSQL** – Ensures **efficient data storage, integrity, and retrieval** for chat messages and media metadata.
 - **Celery** – Handles **background task execution** for LLM processing, media pre-processing (audio/video), and **scheduled tasks (cron jobs)**. Includes **retry mechanisms** for fault tolerance.
 - **MinIO + Pre-Signed URLs** – Securely stores **user-generated media**, allowing **direct client access** while offloading bandwidth from the API server.
+
+
+## Implementation Plan
+I will build the entire system flow, making sure all key parts—like the WebSocket API, message handling, database storage, and response processing—work correctly. However, I will not use Celery for background tasks.
+
+Instead of running Celery, I will mock its behavior by returning predefined or simple test responses. This means the system will still process messages, but without actually using Celery to handle them in the background.
+
+This approach allows me to focus on building and testing the core system, making sure messages are sent, received, and stored properly. It also keeps things simple and easy to run, without needing a full Celery setup.
+
+## Constraints
+
+### 1. At any time, a maximum of 50 clients are allowed to communicate
+see `app.service.websocket_connection_service.WebsocketConnectionService`
+- Check websocket_connection table for the number of concurrent user
+- If accepted, create a new websocket_connection entry, else reject the connection
+- Release the connection (delete) when the client disconnects
+
+What if the server crashes in the middle of connection, the connection will not be released, and the client will not be able to connect again.
+
+- After establishing the connection, periodically update the last_active timestamp
+- Have a cron job to delete the websocket_connection entry if the last_active timestamp is older than a certain threshold
+- This will ensure that the connection is released even if the server crashes
+
+### 2. At any time, a maximum of 500 messages are processed by the server
+- Use T**ask Rate Limit** in Celery
+
+### 3. 1 client cannot make 2 connections to the server simultaneously
+- Similar to the first point, check the websocket_connection table for number of active connections for the user
+
+### 4. All clients must send at least one message to the server
+- I quite don't understand this requirement. All clients must send at least one message to the server, If not what to expect?
 
