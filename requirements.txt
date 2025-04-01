@@ -16,3 +16,6 @@ pydantic==2.10.6
 pytz==2025.2
 filetype==1.2.0
 minio==7.2.15
+locust-plugins[websocket]==4.6.0
+starlette==0.46.1
+requests==2.32.3

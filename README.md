@@ -45,8 +45,47 @@ https://www.youtube.com/watch?v=DbrUxcl_cdY
 
 
 
-## Example End-to-End Flow
-Due to lack of time, I couldn't implement the load testing of the client
+## Example End-to-End Flow - Loadtest
+### Load Test Setup
+
+The load test was conducted using **Locust**.
+
+**Test Parameters**:
+- Users: 100
+- Ramp-up users: 5 users per second
+- Test duration: 2 minutes
+- Message types: Text, Audio, Video
+- Message frequency: 1-3 seconds per client
+
+**Results Summary**:
+- Total Requests: 6,353 
+- Failures: 0 
+- Average Response Time: 1,537.62 ms 
+- Peak Latencies:
+- Text: Fastest (Avg: 553.77 ms), as expected random processing time 0 - 1000 ms
+- Audio: Moderate (Avg: 1569.77 ms), as expected random processing time 1000 - 2000 ms
+- Video: Slowest (Avg: 2586.65 ms), as expected random processing time 2000 - 3000 ms
+
+Despite high throughput (56.4 requests per second), the system handled the load without failures.
+
+|Type|Name      |Request Count|Failure Count|Median Response Time|Average Response Time|Min Response Time|Max Response Time|Average Content Size|Requests/s        |Failures/s|50%|66% |75% |80% |90% |95% |98% |99% |99.9%|99.99%|100%|
+|----|----------|-------------|-------------|--------------------|---------------------|-----------------|-----------------|--------------------|------------------|----------|---|----|----|----|----|----|----|----|-----|------|----|
+|WSS |audio     |2132         |0            |1600                |1569.774315391879    |1106             |2123             |62228.47889305816   |17.770330878594663|0.0       |0  |1400|1500|1700|1800|1900|2000|2000|2100 |2100  |2100|
+|WSS |text      |2150         |0            |510                 |553.7712418300654    |100              |1106             |41.65953488372093   |17.920361814717882|0.0       |0  |400 |510 |610 |820 |920 |1000|1000|1000 |1100  |1100|
+|WSS |timezone  |100          |0            |0                   |0.0                  |0                |0                |27.0                |0.8335052006845527|0.0       |0  |0   |0   |0   |0   |0   |0   |0   |0    |0     |0   |
+|WSS |video     |1971         |0            |2600                |2586.6522633744858   |2112             |3132             |142859.99898528666  |16.428387505492534|0.0       |0  |2400|2600|2700|2800|3000|3000|3000|3100 |3100  |3100|
+|    |Aggregated|6353         |0            |1500                |1537.6228239845261   |100              |3132             |65219.65103100897   |52.952585399489635|0.0       |0  |910 |1500|1800|2400|2700|2900|3000|3100 |3100  |3100|
+
+
+### Run the loadtest yourself
+- Update `WS_MAX_SIMULTANEOUS_USERS` in `.env` to greater than or equal to the number of users in the test
+
+- Start Locust:
+  ```sh
+  locust -f load_test/locust_ws.py
+  ```
+- Access the Locust web interface at `http://localhost:8089` then start the test.
+  
 
 ## Database Diagram
 
@@ -162,7 +201,9 @@ What if the server crashes in the middle of connection, the connection will not 
 - This will ensure that the connection is released even if the server crashes
 
 ### 2. At any time, a maximum of 500 messages are processed by the server
-- Use T**ask Rate Limit** in Celery
+- Celery: Use a Dedicated Queue with Limited Workers
+- Example: If you have 10 workers and want to limit the number of messages to 500, set the queue limit to 50 messages per worker.
+Send messages to a dedicated queue that is assigned to those workers. This way, the system can process a maximum of 500 messages at any time.
 
 ### 3. 1 client cannot make 2 connections to the server simultaneously
 - Similar to the first point, check the websocket_connection table for number of active connections for the user

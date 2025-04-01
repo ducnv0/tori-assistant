@@ -15,6 +15,9 @@ class Database:
             echo=False,
             future=True,
             connect_args={"uri": True},  # Ensures the same database is used
+            pool_size=200,  # Increase pool size
+            max_overflow=200,  # Increase the overflow
+            pool_timeout=10,  # Timeout after 30 seconds if no connection is available
         )
 
         self.AsyncSessionLocal = async_sessionmaker(
