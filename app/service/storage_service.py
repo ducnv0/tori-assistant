@@ -3,8 +3,7 @@ import io
 import logging
 from datetime import timedelta
 
-from minio import Minio
-
+from app.util.custom_minio import CustomMinio
 from config import Config
 
 
@@ -14,11 +13,14 @@ class StorageService:
     def __init__(self):
         """Initialize the MinIO client and ensure the bucket exists."""
         logging.info('Initializing StorageService')
-        self.minio_client = Minio(
+        self.minio_client = CustomMinio(
             Config.MINIO_ENDPOINT,
             access_key=Config.MINIO_ACCESS_KEY,
             secret_key=Config.MINIO_SECRET_KEY,
             secure=Config.MINIO_SECURE,
+            public_endpoint=Config.MINIO_ENDPOINT_PUBLIC
+            if Config.MINIO_ENDPOINT_PUBLIC != Config.MINIO_ENDPOINT
+            else None,
         )
         self.bucket_name = Config.MINIO_BUCKET_NAME
         self.ensure_bucket_exists()

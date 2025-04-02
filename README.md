@@ -1,7 +1,5 @@
 ## Setting Up the Environment and Running the App
 
-Currently, there is an issue with the presigned Minio URL in Docker. To work around this, we'll run Minio in Docker while keeping the server on the local machine.
-
 ### Steps to Set Up and Run the App
 
 1. **Configure the Environment**
@@ -14,25 +12,13 @@ Currently, there is an issue with the presigned Minio URL in Docker. To work aro
       ```  
     - Alternatively, you can use `example-db.sqlite`.
 
-3. **Set Up Minio/S3**
-    - Start Minio using Docker:
+3. **Run the Application**
+    - Start services using Docker:
       ```sh
-      docker-compose up -d minio
-      ```  
-
-4. **Install Dependencies**
-    - Install required dependencies:
-      ```sh
-      pip install -r requirements.txt
-      ```  
-
-5. **Run the Application**
-    - Start the application with:
-      ```sh
-      uvicorn main:app --port 8000
-      ``` 
-6. Access the application at `http://localhost:8000`
-7. Access the API documentation at `http://localhost:8000/docs`
+      docker-compose up -d
+      ```
+4. Access the application at `http://localhost:8000`
+5. Access the API documentation at `http://localhost:8000/docs`
 
 ### Run Unit Tests
 - To run the tests, use:

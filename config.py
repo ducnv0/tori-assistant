@@ -21,6 +21,9 @@ class Config:
         int(os.getenv('WS_CHECK_TIMEZONE_CONSTRAINT', '0'))
     )
     MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'localhost:9000')
+    MINIO_ENDPOINT_PUBLIC = os.getenv(
+        'MINIO_ENDPOINT_PUBLIC', 'localhost:9000'
+    )  # for run app in docker
     MINIO_BUCKET_NAME = os.getenv('MINIO_BUCKET_NAME', '')
     MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', '')
     MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY', '')
